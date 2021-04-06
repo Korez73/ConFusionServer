@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Dishes = require('../models/dishes');
+const common = require("./common");
 
 const dishRouter = express.Router();
 
@@ -13,16 +14,10 @@ var not_supported = (res, msg) => {
     res.end(msg);
 }
 
-var success_response = (res, content) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
-    res.json(content);
-}
-
-// var missing_dish = (dishId) => {
-//     err = new Error("Dish " + dishId + " not found");
-//     err.status = 404;
-//     return next(err);
+// var success_response = (res, content) => {
+//     res.statusCode = 200;
+//     res.setHeader('Content-Type', 'application/json');
+//     res.json(content);
 // }
 
 var missing_record = (recordType, recordId) => {
@@ -34,34 +29,34 @@ var missing_record = (recordType, recordId) => {
 dishRouter.route('/')
 .get((req, res, next) => {
     Dishes.find({})
-        .then((dishes) => success_response(res, dishes), (err) => next(err))
+        .then((dishes) => common.successResponse(res, dishes), (err) => next(err))
         .catch((err) => next(err));
 }).post((req, res, next) => {
     Dishes.create(req.body)
-        .then((dish) => success_response(res, dish), (err) => next(err))
+        .then((dish) => common.successResponse(res, dish), (err) => next(err))
         .catch((err) => next(err));
 }).put((req, res, next) => {
     not_supported(res, 'PUT operation not supported on /dishes')
 }).delete((req, res, next) => {
     Dishes.remove({})
-        .then((resp) => success_response(res, resp), (err) => next(err))
+        .then((resp) => common.successResponse(res, resp), (err) => next(err))
         .catch((err) => next(err));
 });
 
 dishRouter.route('/:dishId')
 .get((req, res, next) => {
     Dishes.findById(req.params.dishId)
-        .then((dish) => success_response(res, dish), (err) => next(err))
+        .then((dish) => common.successResponse(res, dish), (err) => next(err))
         .catch((err) => next(err));
 }).post((req, res, next) => {
     not_supported(res, 'POST operation not supported on /dishes/'+ req.params.dishId)
 }).put((req, res, next) => {
     Dishes.findByIdAndUpdate(req.params.dishId, {$set: req.body}, { new: true })
-        .then((dish) => success_response(res, dish), (err) => next(err))
+        .then((dish) => common.successResponse(res, dish), (err) => next(err))
         .catch((err) => next(err));
 }).delete((req, res, next) => {
     Dishes.findByIdAndRemove(req.params.dishId)
-        .then((dish) => success_response(res, dish), (err) => next(err))
+        .then((dish) => common.successResponse(res, dish), (err) => next(err))
         .catch((err) => next(err));
 });
 
@@ -72,7 +67,7 @@ dishRouter.route('/:dishId/comments')
     Dishes.findById(req.params.dishId)
         .then((dish) => {
             if (null != dish) {
-                success_response(res, dish.comments);
+                common.successResponse(res, dish.comments);
             } else {
                 return missing_record("Dish", req.params.dishId);
             }
@@ -84,7 +79,7 @@ dishRouter.route('/:dishId/comments')
             if (null != dish) {
                 dish.comments.push(req.body);
                 dish.save().then((dish) => {
-                    success_response(res, dish);
+                    common.successResponse(res, dish);
                 })
             } else {
                 return missing_record("Dish", req.params.dishId);
@@ -101,7 +96,7 @@ dishRouter.route('/:dishId/comments')
                     dish.comments.id(dish.comments[i]._id).remove();
                 }
                 dish.save().then((dish) => {
-                    success_response(res, dish);
+                    common.successResponse(res, dish);
                 }, (err) => next(err));
             } else {
                 return missing_record("Dish", req.params.dishId);
@@ -115,7 +110,7 @@ dishRouter.route('/:dishId/comments/:commentId')
     Dishes.findById(req.params.dishId)
         .then((dish) => {
             if (null != dish && null != dish.comments.id(req.params.commentId)) {
-                success_response(res, dish.comments.id(req.params.commentId));
+                common.successResponse(res, dish.comments.id(req.params.commentId));
             } else if (null == dish) {
                 return missing_record("Dish", req.params.dishId);
             } else {
@@ -136,7 +131,7 @@ dishRouter.route('/:dishId/comments/:commentId')
                     dish.comments.id(req.params.commentId).comment = req.body.comment;
                 }
                 dish.save().then((dish) => {
-                    success_response(res, dish);
+                    common.successResponse(res, dish);
                 }, (err) => next(err));
             } else if (null == dish) {
                 return missing_record("Dish", req.params.dishId);
@@ -151,7 +146,7 @@ dishRouter.route('/:dishId/comments/:commentId')
             if (null != dish && null != dish.comments.id(req.params.commentId)) {
                 dish.comments.id(req.params.commentId).remove();
                 dish.save().then((dish) => {
-                    success_response(res, dish);
+                    common.successResponse(res, dish);
                 }, (err) => next(err));
             } else if (null == dish) {
                 return missing_record("Dish", req.params.dishId);
