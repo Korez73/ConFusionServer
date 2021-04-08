@@ -8,7 +8,7 @@ const dishRouter = express.Router();
 dishRouter.use(express.urlencoded({extended: true}));
 dishRouter.use(express.json());
 
-//common
+//common (partially supported common module)
 var not_supported = (res, msg) => {
     res.statusCode = 403;
     res.end(msg);

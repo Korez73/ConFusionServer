@@ -8,7 +8,7 @@ const leaderRouter = express.Router();
 leaderRouter.use(express.urlencoded({extended: true}));
 leaderRouter.use(express.json());
 
-//common
+//common (below 3 methods can be swapped out for common module methods)
 var not_supported = (res, msg) => {
     res.statusCode = 403;
     res.end(msg);
