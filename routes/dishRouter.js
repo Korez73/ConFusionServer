@@ -30,6 +30,7 @@ dishRouter.use(express.json());
 dishRouter.route('/')
 .get((req, res, next) => {
     Dishes.find({})
+        .populate('comments.author')
         .then((dishes) => common.successResponse(res, dishes), (err) => next(err))
         .catch((err) => next(err));
 }).post(authenticate.verifyUser, (req, res, next) => {
@@ -47,6 +48,7 @@ dishRouter.route('/')
 dishRouter.route('/:dishId')
 .get((req, res, next) => {
     Dishes.findById(req.params.dishId)
+        .populate('comments.author')
         .then((dish) => common.successResponse(res, dish), (err) => next(err))
         .catch((err) => next(err));
 }).post(authenticate.verifyUser, (req, res, next) => {
@@ -66,6 +68,7 @@ dishRouter.route('/:dishId')
 dishRouter.route('/:dishId/comments')
 .get((req, res, next) => {
     Dishes.findById(req.params.dishId)
+        .populate('comments.author')
         .then((dish) => {
             if (null != dish) {
                 common.successResponse(res, dish.comments);
@@ -78,9 +81,14 @@ dishRouter.route('/:dishId/comments')
     Dishes.findById(req.params.dishId)
         .then((dish) => {
             if (null != dish) {
+                req.body.author = req.user._id;
                 dish.comments.push(req.body);
                 dish.save().then((dish) => {
-                    common.successResponse(res, dish);
+                    Dishes.findById(dish._id)
+                        .populate('comments.author')
+                        .then((dish) => {
+                            common.successResponse(res, dish);
+                        });
                 })
             } else {
                 return common.missingRecord("Dish", req.params.dishId);
@@ -109,6 +117,7 @@ dishRouter.route('/:dishId/comments')
 dishRouter.route('/:dishId/comments/:commentId')
 .get((req, res, next) => {
     Dishes.findById(req.params.dishId)
+        .populate('comments.author')
         .then((dish) => {
             if (null != dish && null != dish.comments.id(req.params.commentId)) {
                 common.successResponse(res, dish.comments.id(req.params.commentId));
@@ -132,7 +141,11 @@ dishRouter.route('/:dishId/comments/:commentId')
                     dish.comments.id(req.params.commentId).comment = req.body.comment;
                 }
                 dish.save().then((dish) => {
-                    common.successResponse(res, dish);
+                    Dishes.findById(dish._id)
+                    .populate('comments.author')
+                    .then((dish) => {
+                        common.successResponse(res, dish);
+                    })
                 }, (err) => next(err));
             } else if (null == dish) {
                 return common.missingRecord("Dish", req.params.dishId);
@@ -147,7 +160,11 @@ dishRouter.route('/:dishId/comments/:commentId')
             if (null != dish && null != dish.comments.id(req.params.commentId)) {
                 dish.comments.id(req.params.commentId).remove();
                 dish.save().then((dish) => {
-                    common.successResponse(res, dish);
+                    Dishes.findById(dish._id)
+                    .populate('comments.author')
+                    .then((dish) => {
+                        common.successResponse(res, dish);
+                    })
                 }, (err) => next(err));
             } else if (null == dish) {
                 return common.missingRecord("Dish", req.params.dishId);
