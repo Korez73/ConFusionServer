@@ -38,3 +38,13 @@ exports.jwtPassport = passport.use(new JwtStrategy(opts,
 
 //note: we also use passport.authenticate('local') in the users.js /login POST method
 exports.verifyUser = passport.authenticate('jwt', {session: false});
+
+exports.verifyAdmin = (req, _, next) => {
+    if(!req.user.admin) {
+        err = new Error("You are not authorized to perform this operation!");
+        err.status = 403;
+        return next(err);
+    }
+    
+    next();
+}

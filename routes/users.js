@@ -8,19 +8,21 @@ router.use(express.urlencoded({extended: true}));
 router.use(express.json());
 
 
+var success_response = (res, content) => {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json(content);
+}
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, (_, res, next) => {
+    User.find({})
+    .then((users) => success_response(res, users), (err) => next(err))
+    .catch((err) => next(err));
 });
 
-//common???
-// var not_supported = (res, msg) => {
-//     res.statusCode = 403;
-//     res.end(msg);
-// }
 
-router.post('/signup', (req, res, next) => {
+router.post('/signup', (req, res) => {
     User.register(new User({username: req.body.username}), req.body.password, (err, user) => {
         if(err) {
             res.statusCode = 500;
@@ -31,7 +33,7 @@ router.post('/signup', (req, res, next) => {
                 user.firstname = req.body.firstname;
             if (req.body.lastname)
                 user.lastname = req.body.lastname;      
-            user.save((err, user) => {
+            user.save((err, _) => {
                 if (err) {
                     res.statusCode = 500;
                     res.setHeader('Content-Type', 'application/json');
