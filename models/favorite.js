@@ -13,6 +13,8 @@ const favoriteSchema = new Schema({
             ref: 'Dish'
         }
     ] 
+},{
+    timestamps: true
 });
 
 module.exports = mongoose.model('Favorite', favoriteSchema);
