@@ -6,10 +6,10 @@ from The Hong Kong University of Science and Technology
 
 
 ensure you have a configured mongodb server up and running.
-    mongod --dbpath=data -bind_ip 127.0.0.1
+`mongod --dbpath=data -bind_ip 127.0.0.1`
 
 you should be able to start the server by going to the root of this project, then running 
-    npm start.
+`npm start`.
 
 
 
